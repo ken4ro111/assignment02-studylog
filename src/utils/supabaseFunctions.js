@@ -9,3 +9,20 @@ export const getAllStudyRecord = async () => {
 
   return data;
 };
+
+export const insertStudyRecord = async (data) => {
+  const { error } = await supabase
+    .from("study-record")
+    .insert({ ...data });
+
+    if (error) throw new Error(error.message);
+}
+
+export const deleteStudyRecord = async (id) => {
+  const { error } = await supabase
+    .from("study-record")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+}

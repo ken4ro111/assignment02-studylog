@@ -2,9 +2,18 @@ import { useEffect, useState } from "react";
 import { InputField } from "./components/InputField.jsx";
 import { StudyRecordPreview } from "./components/StudyRecordPreview";
 import { Button } from "./components/Button";
-import { getAllStudyRecord } from "./utils/supabaseFunctions.js";
+import { deleteStudyRecord, getAllStudyRecord, insertStudyRecord } from "./utils/supabaseFunctions.js";
 
 export const StudyRecordList = () => {
+  /**
+   * @typedef {Object} StudyRecord
+   * @property {string} id
+   * @property {string} title
+   * @property {number} time
+   * @property {string} created_at
+   */
+
+  /** @type {StudyRecord[]} */
   const [studyRecords, setStudyRecords] = useState([]);
 
   const [studyRecord, setStudyRecord] = useState({
@@ -20,21 +29,27 @@ export const StudyRecordList = () => {
 
   const [error, setError] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
+  const fetchStudyRecords = async () => {
+    setLoading(true);
+
+    try {
+      const data = await getAllStudyRecord();
+
+      setStudyRecords(data ?? []);
+    } catch (error) {
+      console.log(error);
+
+      setStudyRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // supabaseからデータを取得
   useEffect(() => {
-    const getStudyRecords =  async () => {
-      try {
-        const data = await getAllStudyRecord();
-
-        setStudyRecords(data ?? []);
-      } catch(err) {
-        console.log(err);
-
-        setStudyRecords([]);;
-      }
-    }
-
-    getStudyRecords();
+    fetchStudyRecords();
   }, []);
 
   const handleChange = (e) => {
@@ -46,7 +61,7 @@ export const StudyRecordList = () => {
     }));
   };
 
-  const onClickAdd = () => {
+  const onClickAdd = async () => {
     if (studyRecord.time < 0) return;
 
     setError(false);
@@ -57,13 +72,33 @@ export const StudyRecordList = () => {
       return;
     };
 
-    setStudyRecords([...studyRecords, { title: studyRecord.title, time: studyRecord.time }]);
+    setLoading(true);
+
+    try {
+      await insertStudyRecord(studyRecord)
+
+      await fetchStudyRecords();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
 
     setStudyRecord({ title: "", time: 0});
   };
 
-  const onClickDelete = (index) => {
-    setStudyRecords(studyRecords.filter((record, i) => i !== index));
+  const onClickDelete = async (id) => {
+    setLoading(true);
+
+    try {
+      await deleteStudyRecord(id)
+
+      await fetchStudyRecords();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -71,6 +106,9 @@ export const StudyRecordList = () => {
       return acc + parseInt(current.time);
     }, 0));
   }, [studyRecords]);
+
+  // supabaseの読み込みが完了するまでローディングを表示
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
@@ -105,12 +143,12 @@ export const StudyRecordList = () => {
         {error && <p style={{ color: "red" }}>入力されていない項目があります</p>}
         <div>
           <ul>
-            {studyRecords.map((record, index) => (
-              <li key={index} style={{ display: "flex" }}>
+            {studyRecords.map((record) => (
+              <li key={record.id} style={{ display: "flex" }}>
                 {record.title}：{record.time}
                 <Button
                   title="削除"
-                  onClick={() => onClickDelete(index)}
+                  onClick={() => onClickDelete(record.id)}
                 />
               </li>
             ))}
