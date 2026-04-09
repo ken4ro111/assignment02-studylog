@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { InputField } from "./components/InputField.jsx";
 import { StudyRecordPreview } from "./components/StudyRecordPreview";
 import { Button } from "./components/Button";
+import { getAllStudyRecord } from "./utils/supabaseFunctions.js";
 
 export const StudyRecordList = () => {
-
   const [studyRecords, setStudyRecords] = useState([]);
 
   const [studyRecord, setStudyRecord] = useState({
@@ -19,6 +19,23 @@ export const StudyRecordList = () => {
   );
 
   const [error, setError] = useState(false);
+
+  // supabaseからデータを取得
+  useEffect(() => {
+    const getStudyRecords =  async () => {
+      try {
+        const data = await getAllStudyRecord();
+
+        setStudyRecords(data ?? []);
+      } catch(err) {
+        console.log(err);
+
+        setStudyRecords([]);;
+      }
+    }
+
+    getStudyRecords();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
