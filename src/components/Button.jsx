@@ -1,3 +1,5 @@
+import styles from './css/Button.module.css';
+
 export const Button = (props) => {
   const { title, onClick } = props;
 
@@ -5,7 +7,7 @@ export const Button = (props) => {
     <div>
       <button
         onClick={onClick}
-        style={{ padding: "8px", margin: "4px", border: "none", borderRadius: "4px", color: "white", backgroundColor: "#00c395cd", cursor: "pointer" }}
+        className={styles.button}
       >{title}</button>
     </div>
   )
