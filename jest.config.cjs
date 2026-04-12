@@ -6,7 +6,7 @@ module.exports = {
     "^.+\\.[jt]sx?$": "babel-jest",
   },
   moduleNameMapper: {
-    "\\.(css|less|sass|scss)$": "<rootDir>/tests/styleMock.js",
+    "\\.(css|less|sass|scss)$": "<rootDir>/src/tests/styleMock.js",
   },
   setupFiles: ["dotenv/config"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
